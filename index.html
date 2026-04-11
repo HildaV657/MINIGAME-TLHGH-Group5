@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Mini Game: Mắt Tinh - Óc Sáng</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -13,6 +13,9 @@ body {
   height: 100vh;
   width: 100vw;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* Chống bôi đen text trên mobile */
+  -webkit-user-select: none;
+  user-select: none; 
 }
 
 .header-text {
@@ -21,11 +24,14 @@ body {
     left: 50%;
     transform: translateX(-50%);
     color: #ffdd59;
-    font-size: 24px;
+    /* Dùng clamp để font chữ tự động to nhỏ theo màn hình */
+    font-size: clamp(16px, 4vw, 24px); 
     font-weight: bold;
     z-index: 200;
     text-shadow: 0 0 10px rgba(255, 221, 89, 0.5);
     pointer-events: none;
+    width: 90%;
+    text-align: center;
 }
 
 .stage {
@@ -47,34 +53,40 @@ body {
 .keyword {
   display: inline-block;
   color: #fff;
-  padding: 0 2.5vw;
+  /* Giãn khoảng cách các từ trên mobile */
+  padding: 0 max(15px, 3vw); 
   cursor: crosshair;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  user-select: none;
   letter-spacing: 1px;
+  /* Xóa hiệu ứng bóng mờ khi tap trên điện thoại */
+  -webkit-tap-highlight-color: transparent; 
+  /* Tăng tốc độ phản hồi khi chạm */
+  touch-action: manipulation; 
 }
 
-/* Hiệu ứng khi lướt chuột qua */
-.keyword:hover {
-  text-shadow: 0 0 15px rgba(255,255,255,1);
-  transform: scale(1.1);
-  opacity: 1 !important;
-  z-index: 10;
+/* Hiệu ứng khi lướt chuột qua (chỉ tác dụng trên máy tính) */
+@media (hover: hover) {
+  .keyword:hover {
+    text-shadow: 0 0 15px rgba(255,255,255,1);
+    transform: scale(1.1);
+    opacity: 1 !important;
+    z-index: 10;
+  }
 }
 
 /* Hiệu ứng khi bấm ĐÚNG (Từ khóa bài học) */
 .keyword.correct {
-  color: #0be881 !important; /* Màu xanh lá */
+  color: #0be881 !important; 
   font-weight: 900 !important;
   text-shadow: 0 0 20px #0be881, 0 0 40px #0be881 !important;
-  transform: scale(1.5);
+  transform: scale(1.3); /* Scale nhẹ lại cho mobile đỡ tràn */
   opacity: 1 !important;
   z-index: 100;
 }
 
 /* Hiệu ứng khi bấm SAI (Từ gây nhiễu) */
 .keyword.wrong {
-  color: #ff3f34 !important; /* Màu đỏ */
+  color: #ff3f34 !important; 
   text-decoration: line-through;
   opacity: 0.3 !important;
   transform: scale(0.8);
@@ -93,12 +105,11 @@ body {
 </head>
 <body>
 
-<div class="header-text">NHANH MẮT TÌM TỪ KHÓA BÀI HỌC (Click vào chữ)</div>
+<div class="header-text">NHANH MẮT TÌM TỪ KHÓA BÀI HỌC (Chạm vào chữ)</div>
 <div class="vignette"></div>
 <div class="stage" id="stage"></div>
 
 <script>
-// === DANH SÁCH 1: TỪ KHÓA CHUẨN CỦA BÀI HỌC ===
 const TARGET_WORDS = [
   "Hoạt động chủ đạo", "Tuổi đầu thanh niên", "Hướng nghiệp", "15–18 tuổi",
   "Xu hướng nghề nghiệp", "Chọn nghề", "Hứng thú nghề", "Khẳng định bản thân",
@@ -107,7 +118,6 @@ const TARGET_WORDS = [
   "Tính độc lập", "Tính sáng tạo", "Cá nhân hóa", "Sở thích cá nhân"
 ];
 
-// === DANH SÁCH 2: TỪ KHÓA GÂY NHIỄU (Không liên quan) ===
 const NOISE_WORDS = [
   "Trà sữa trân châu", "Định lý Pi-ta-go", "Chơi Game Online", "Idol Tiktok", 
   "Bún đậu mắm tôm", "Hố đen vũ trụ", "Đu Trend mạng", "Bấm điện thoại", 
@@ -116,14 +126,17 @@ const NOISE_WORDS = [
   "Lướt Facebook", "Tóp Tóp", "Gà rán KFC", "Oxi hóa khử", "Đạo hàm tích phân"
 ];
 
-// Trộn chung cả 2 danh sách lại
 const ALL_KEYWORDS = TARGET_WORDS.concat(NOISE_WORDS);
 
-const LANE_COUNT = 10; // Số dòng chữ chạy
 const stage = document.getElementById('stage');
+
+// Phát hiện xem có phải màn hình điện thoại không
+const isMobile = window.innerWidth < 768;
+
+// Tự động điều chỉnh số dòng: Mobile ít dòng hơn một chút để chữ không dính vào nhau
+const LANE_COUNT = isMobile ? 8 : 10; 
 const laneHeight = 100 / LANE_COUNT;
 
-// Hàm trộn ngẫu nhiên mảng
 function shuffle(arr) {
   let a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -133,16 +146,15 @@ function shuffle(arr) {
   return a;
 }
 
-// Cấu hình hiển thị chữ
-const sizes   = [16, 20, 24, 28, 36, 42]; // Kích thước chữ
-const weights = [300, 400, 600, 700];     // Độ đậm nhạt
-const opacities = [0.4, 0.6, 0.8, 1.0];   // Độ mờ
+// Cấu hình font chữ: Thu nhỏ lại nếu đang ở trên điện thoại
+const sizes = isMobile ? [14, 16, 20, 24, 28] : [16, 20, 24, 28, 36, 42];
+const weights = [300, 400, 600, 700];     
+const opacities = [0.4, 0.6, 0.8, 1.0];   
 
 function randFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 const laneData = [];
 
-// Khởi tạo các dòng (lanes)
 for (let i = 0; i < LANE_COUNT; i++) {
   const lane = document.createElement('div');
   lane.className = 'lane';
@@ -151,7 +163,6 @@ for (let i = 0; i < LANE_COUNT; i++) {
   lane.style.top = topPct + 'vh';
   lane.style.height = laneHeight + 'vh';
 
-  // Lấy mảng từ khóa đã trộn và nhân đôi lên để chạy vòng lặp mượt
   const words = shuffle(ALL_KEYWORDS).concat(shuffle(ALL_KEYWORDS));
 
   words.forEach(word => {
@@ -159,21 +170,18 @@ for (let i = 0; i < LANE_COUNT; i++) {
     span.className = 'keyword';
     span.textContent = word;
 
-    // Random style cho từng chữ
     span.style.fontSize   = randFrom(sizes) + 'px';
     span.style.fontWeight = randFrom(weights);
     span.style.opacity    = randFrom(opacities);
 
-    // === TÍNH NĂNG TƯƠNG TÁC (CLICK) ===
+    // Xử lý sự kiện chạm/click
     span.onclick = function() {
-      // Nếu chữ đã bấm rồi thì không xử lý nữa
       if (this.classList.contains('correct') || this.classList.contains('wrong')) return;
 
-      // Kiểm tra xem từ vừa bấm thuộc danh sách nào
       if (TARGET_WORDS.includes(this.textContent)) {
-        this.classList.add('correct'); // Bấm đúng -> Xanh lá
+        this.classList.add('correct'); 
       } else {
-        this.classList.add('wrong');   // Bấm sai -> Đỏ
+        this.classList.add('wrong');   
       }
     };
 
@@ -182,17 +190,16 @@ for (let i = 0; i < LANE_COUNT; i++) {
 
   stage.appendChild(lane);
 
-  // === ĐIỀU CHỈNH TỐC ĐỘ Ở ĐÂY ===
-  // Tốc độ cơ bản là 150, cộng thêm random từ 0 đến 100 (Tức là tốc độ từ 150 đến 250)
-  // Nếu muốn nhanh hơn nữa, tăng số 150 lên 200, 250...
-  const speed = 150 + Math.random() * 100; 
+  // Điều chỉnh tốc độ: Chạy chậm hơn một chút trên mobile vì màn hình hẹp
+  const baseSpeed = isMobile ? 80 : 150;
+  const randomSpeed = isMobile ? 60 : 100;
+  const speed = baseSpeed + Math.random() * randomSpeed; 
   
-  const dir   = (i % 2 === 0) ? 1 : -1;  // Chạy so le trái phải
+  const dir   = (i % 2 === 0) ? 1 : -1;  
 
   laneData.push({ el: lane, speed, dir, offset: 0 });
 }
 
-// Xử lý vòng lặp chạy chữ
 requestAnimationFrame(() => {
   laneData.forEach(lane => {
     const w = lane.el.scrollWidth;
