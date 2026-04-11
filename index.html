@@ -1,332 +1,228 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bàn Cân Tương Lai - Trò Chơi Hướng Nghiệp</title>
-    <style>
-        :root {
-            --primary: #4a69bd;
-            --secondary: #60a3bc;
-            --accent: #e55039;
-            --bg: #f1f2f6;
-            --card-bg: #ffffff;
-            --text-main: #2f3542;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Game: Mắt Tinh - Óc Sáng</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #111;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
+.header-text {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffdd59;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 200;
+    text-shadow: 0 0 10px rgba(255, 221, 89, 0.5);
+    pointer-events: none;
+}
 
-        .game-container {
-            background-color: var(--card-bg);
-            max-width: 800px;
-            width: 100%;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            padding: 40px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
 
-        .screen {
-            display: none;
-            animation: fadeIn 0.5s ease-in-out;
-        }
+.lane {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+}
 
-        .screen.active {
-            display: block;
-        }
+.keyword {
+  display: inline-block;
+  color: #fff;
+  padding: 0 2.5vw;
+  cursor: crosshair;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  user-select: none;
+  letter-spacing: 1px;
+}
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+/* Hiệu ứng khi lướt chuột qua */
+.keyword:hover {
+  text-shadow: 0 0 15px rgba(255,255,255,1);
+  transform: scale(1.1);
+  opacity: 1 !important;
+  z-index: 10;
+}
 
-        h1 {
-            color: var(--primary);
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
+/* Hiệu ứng khi bấm ĐÚNG (Từ khóa bài học) */
+.keyword.correct {
+  color: #0be881 !important; /* Màu xanh lá */
+  font-weight: 900 !important;
+  text-shadow: 0 0 20px #0be881, 0 0 40px #0be881 !important;
+  transform: scale(1.5);
+  opacity: 1 !important;
+  z-index: 100;
+}
 
-        p.subtitle {
-            color: #747d8c;
-            margin-bottom: 30px;
-            font-size: 16px;
-        }
+/* Hiệu ứng khi bấm SAI (Từ gây nhiễu) */
+.keyword.wrong {
+  color: #ff3f34 !important; /* Màu đỏ */
+  text-decoration: line-through;
+  opacity: 0.3 !important;
+  transform: scale(0.8);
+}
 
-        /* Card Grid */
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background-color: #f8f9fa;
-            border: 2px solid #dfe4ea;
-            border-radius: 12px;
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: var(--secondary);
-            box-shadow: 0 5px 15px rgba(96, 163, 188, 0.2);
-        }
-
-        .card.selected {
-            border-color: var(--primary);
-            background-color: #f0f3f8;
-            box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.2);
-        }
-
-        .card-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-
-        .card-title {
-            font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 8px;
-            color: var(--primary);
-        }
-
-        .card-desc {
-            font-size: 14px;
-            color: #57606f;
-        }
-
-        .badge {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background-color: var(--accent);
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            opacity: 0;
-            transform: scale(0);
-            transition: all 0.3s ease;
-        }
-
-        .card.selected .badge {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* Buttons */
-        .btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            margin-top: 15px;
-        }
-
-        .btn:hover { background-color: #3b5598; }
-        .btn:disabled { background-color: #ced6e0; cursor: not-allowed; }
-        .btn-outline { background-color: transparent; border: 2px solid var(--primary); color: var(--primary); }
-        .btn-outline:hover { background-color: var(--primary); color: white; }
-
-        /* Conflict & Result Screen */
-        .conflict-box, .result-box {
-            background-color: #f8f9fa;
-            border-left: 5px solid var(--accent);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            text-align: left;
-            font-size: 18px;
-            line-height: 1.8;
-        }
-        
-        .result-box { border-left-color: var(--primary); }
-        .analysis { background-color: #eccc68; padding: 15px; border-radius: 8px; font-size: 15px; margin-top: 20px; color: #2f3542; font-style: italic;}
-        
-        .action-buttons { display: flex; flex-direction: column; gap: 15px; }
-    </style>
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  background:
+    linear-gradient(to right, #111 0%, transparent 15%, transparent 85%, #111 100%),
+    linear-gradient(to bottom, #111 0%, transparent 10%, transparent 90%, #111 100%);
+}
+</style>
 </head>
 <body>
 
-<div class="game-container">
-
-    <div id="screen-select" class="screen active">
-        <h1>Bàn Cân Tương Lai ⚖️</h1>
-        <p class="subtitle">Mục 3.2.3: Các yếu tố chi phối việc chọn nghề. <br>Hãy chọn <strong>ĐÚNG 2 THẺ</strong> mà bạn cho là tác động mạnh mẽ nhất đến quyết định của bạn.</p>
-        
-        <div class="card-grid" id="cardGrid">
-            </div>
-
-        <button id="btnNext" class="btn" disabled onclick="goToConflict()">Xác nhận & Tiếp tục</button>
-    </div>
-
-    <div id="screen-conflict" class="screen">
-        <h1>Va Chạm Thực Tế ⚡</h1>
-        <p class="subtitle">Vòng xoáy băn khoăn của tuổi 17 bắt đầu...</p>
-
-        <div class="conflict-box" id="conflictText">
-            </div>
-
-        <h3>Nếu bắt buộc phải quyết định ngay bây giờ, bạn sẽ:</h3>
-        <br>
-        <div class="action-buttons" id="actionButtons">
-            </div>
-    </div>
-
-    <div id="screen-result" class="screen">
-        <h1>Kết Quả Lựa Chọn 🎯</h1>
-        <p class="subtitle">Phân tích Tâm lý lứa tuổi đầu thanh niên</p>
-
-        <div class="result-box" id="resultText">
-            </div>
-
-        <div class="analysis" id="analysisText">
-            </div>
-
-        <button class="btn" onclick="resetGame()" style="margin-top: 30px;">Chơi lại từ đầu</button>
-    </div>
-
-</div>
+<div class="header-text">NHANH MẮT TÌM TỪ KHÓA BÀI HỌC (Click vào chữ)</div>
+<div class="vignette"></div>
+<div class="stage" id="stage"></div>
 
 <script>
-    // Dữ liệu các thẻ bài
-    const cardsData = [
-        { id: 'dam_me', title: 'Đam Mê / Sở Thích', icon: '🎨', desc: 'Làm nghề mình cực kỳ yêu thích.' },
-        { id: 'nang_luc', title: 'Năng Lực Bản Thân', icon: '🧠', desc: 'Làm nghề đúng với sở trường, học lực.' },
-        { id: 'cha_me', title: 'Kỳ Vọng Cha Mẹ', icon: '👨‍👩‍👧', desc: 'Chọn theo ý muốn của gia đình.' },
-        { id: 'trend', title: 'Nghề Hot / Lương Cao', icon: '💰', desc: 'Đảm bảo thu nhập tốt, dễ xin việc.' },
-        { id: 'ban_be', title: 'Ảnh Hưởng Bạn Bè', icon: '🤝', desc: 'Học cùng trường với hội bạn thân.' }
-    ];
+// === DANH SÁCH 1: TỪ KHÓA CHUẨN CỦA BÀI HỌC ===
+const TARGET_WORDS = [
+  "Hoạt động chủ đạo", "Tuổi đầu thanh niên", "Hướng nghiệp", "15–18 tuổi",
+  "Xu hướng nghề nghiệp", "Chọn nghề", "Hứng thú nghề", "Khẳng định bản thân",
+  "Kỳ vọng cha mẹ", "Hoạt động nhận thức", "Tri giác có chủ định", "Ghi nhớ logic", 
+  "Tư duy trừu tượng", "Tư duy lý luận", "Óc phê phán", "Hoài nghi khoa học",
+  "Tính độc lập", "Tính sáng tạo", "Cá nhân hóa", "Sở thích cá nhân"
+];
 
-    let selectedCards = [];
+// === DANH SÁCH 2: TỪ KHÓA GÂY NHIỄU (Không liên quan) ===
+const NOISE_WORDS = [
+  "Trà sữa trân châu", "Định lý Pi-ta-go", "Chơi Game Online", "Idol Tiktok", 
+  "Bún đậu mắm tôm", "Hố đen vũ trụ", "Đu Trend mạng", "Bấm điện thoại", 
+  "Cúp C1 Châu Âu", "Ngủ nướng", "Lực ma sát", "Cách mạng 4.0", 
+  "Shopping săn sale", "Trí tuệ nhân tạo AI", "Tập Gym", "Phim truyền hình", 
+  "Lướt Facebook", "Tóp Tóp", "Gà rán KFC", "Oxi hóa khử", "Đạo hàm tích phân"
+];
 
-    // Render Cards
-    function renderCards() {
-        const grid = document.getElementById('cardGrid');
-        grid.innerHTML = '';
-        
-        cardsData.forEach(card => {
-            const cardEl = document.createElement('div');
-            cardEl.className = 'card';
-            cardEl.id = `card-${card.id}`;
-            cardEl.onclick = () => toggleCard(card);
-            
-            cardEl.innerHTML = `
-                <div class="badge">✓</div>
-                <div class="card-icon">${card.icon}</div>
-                <div class="card-title">${card.title}</div>
-                <div class="card-desc">${card.desc}</div>
-            `;
-            grid.appendChild(cardEl);
-        });
-    }
+// Trộn chung cả 2 danh sách lại
+const ALL_KEYWORDS = TARGET_WORDS.concat(NOISE_WORDS);
 
-    // Xử lý chọn thẻ
-    function toggleCard(card) {
-        const index = selectedCards.findIndex(c => c.id === card.id);
-        
-        if (index > -1) {
-            selectedCards.splice(index, 1); // Bỏ chọn
-            document.getElementById(`card-${card.id}`).classList.remove('selected');
-        } else {
-            if (selectedCards.length < 2) {
-                selectedCards.push(card); // Chọn mới
-                document.getElementById(`card-${card.id}`).classList.add('selected');
-            } else {
-                alert('Bạn chỉ được chọn tối đa 2 thẻ!');
-            }
-        }
+const LANE_COUNT = 10; // Số dòng chữ chạy
+const stage = document.getElementById('stage');
+const laneHeight = 100 / LANE_COUNT;
 
-        // Bật tắt nút Tiếp tục
-        document.getElementById('btnNext').disabled = selectedCards.length !== 2;
-    }
+// Hàm trộn ngẫu nhiên mảng
+function shuffle(arr) {
+  let a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
-    // Chuyển màn hình
-    function showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(screenId).classList.add('active');
-    }
+// Cấu hình hiển thị chữ
+const sizes   = [16, 20, 24, 28, 36, 42]; // Kích thước chữ
+const weights = [300, 400, 600, 700];     // Độ đậm nhạt
+const opacities = [0.4, 0.6, 0.8, 1.0];   // Độ mờ
 
-    // Tạo tình huống mâu thuẫn (Màn 2)
-    function goToConflict() {
-        const card1 = selectedCards[0];
-        const card2 = selectedCards[1];
+function randFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-        const conflictText = document.getElementById('conflictText');
-        conflictText.innerHTML = `Giả sử bạn đang chuẩn bị nộp hồ sơ Đại học. Trái tim và lý trí của bạn đang bị giằng xé kịch liệt giữa hai yếu tố:<br><br>
-        1️⃣ <strong>${card1.title}</strong><br>
-        2️⃣ <strong>${card2.title}</strong><br><br>
-        Một bên níu kéo, một bên hối thúc. Bạn cảm thấy bối rối vô cùng vì không thể thỏa mãn cả hai cùng lúc!`;
+const laneData = [];
 
-        const actionButtons = document.getElementById('actionButtons');
-        actionButtons.innerHTML = `
-            <button class="btn btn-outline" onclick="showResult('${card1.id}')">Thiên hẳn về: ${card1.title}</button>
-            <button class="btn btn-outline" onclick="showResult('${card2.id}')">Thiên hẳn về: ${card2.title}</button>
-            <button class="btn" onclick="showResult('dung_hoa')">Dừng lại! Cố gắng tìm điểm giao thoa.</button>
-        `;
+// Khởi tạo các dòng (lanes)
+for (let i = 0; i < LANE_COUNT; i++) {
+  const lane = document.createElement('div');
+  lane.className = 'lane';
 
-        showScreen('screen-conflict');
-    }
+  const topPct = (i / LANE_COUNT) * 100 + laneHeight * 0.1;
+  lane.style.top = topPct + 'vh';
+  lane.style.height = laneHeight + 'vh';
 
-    // Hiển thị kết quả & Phân tích Tâm lý (Màn 3)
-    function showResult(choiceId) {
-        const resultText = document.getElementById('resultText');
-        const analysisText = document.getElementById('analysisText');
+  // Lấy mảng từ khóa đã trộn và nhân đôi lên để chạy vòng lặp mượt
+  const words = shuffle(ALL_KEYWORDS).concat(shuffle(ALL_KEYWORDS));
 
-        if (choiceId === 'dung_hoa') {
-            resultText.innerHTML = "<strong>Lựa chọn xuất sắc!</strong> Bạn đã không để mình bị cuốn theo một yếu tố duy nhất. Bạn quyết định ngồi lại, tìm hiểu kỹ thông tin các ngành học để tìm ra một nghề nghiệp vừa đáp ứng được tiêu chí này, vừa không bỏ rơi tiêu chí kia.";
-            analysisText.innerHTML = "<strong>💡 Liên hệ Mục 3.2.4 (Giải pháp hỗ trợ):</strong> Đây chính là minh chứng cho sự trưởng thành! Ở tuổi thanh niên, các em rất dễ bối rối trước nhiều luồng ý kiến. Giải pháp tốt nhất không phải là chọn bừa, mà phải dựa trên sự cân nhắc đồng thời: Nhu cầu (Đam mê) + Năng lực bản thân + Nhu cầu xã hội (Nghề hot) với sự tư vấn của nhà trường và gia đình.";
-        } 
-        else if (choiceId === 'cha_me' || choiceId === 'ban_be') {
-            resultText.innerHTML = "<strong>Sự lựa chọn an toàn nhưng rủi ro tâm lý cao!</strong> Bạn quyết định nhượng bộ để làm vui lòng người khác hoặc để không bị lạc lõng.";
-            analysisText.innerHTML = "<strong>💡 Liên hệ Mục 3.2.3 (Yếu tố chi phối):</strong> Tác động của cha mẹ và bạn bè rất lớn ở tuổi 17. Việc chọn nghề theo người khác có thể khiến các em đánh mất động lực học tập nội tại. Chọn nghề có ý nghĩa quan trọng với cuộc đời MỖI NGƯỜI, nên sự chủ động của chính bản thân các em mới là quan trọng nhất (Mục 3.2.1).";
-        }
-        else {
-            resultText.innerHTML = "<strong>Quyết định đầy quyết tâm!</strong> Bạn đi theo tiếng gọi của bản thân hoặc chạy theo xu hướng thực tế.";
-            analysisText.innerHTML = "<strong>💡 Liên hệ Mục 3.2.2 (Biểu hiện xu hướng nghề nghiệp):</strong> Quyết định này cho thấy khát khao khẳng định bản thân của tuổi đầu thanh niên. Việc chọn nghề sẽ thúc đẩy các em nỗ lực học tập (ví dụ: cày cuốc ngày đêm để đỗ bằng được). Tuy nhiên, nếu thiếu đi sự tư vấn khách quan (Mục 3.2.4), quyết định này có thể dẫn đến sự hụt hẫng nếu sau này thực tế không như mơ.";
-        }
+  words.forEach(word => {
+    const span = document.createElement('span');
+    span.className = 'keyword';
+    span.textContent = word;
 
-        showScreen('screen-result');
-    }
+    // Random style cho từng chữ
+    span.style.fontSize   = randFrom(sizes) + 'px';
+    span.style.fontWeight = randFrom(weights);
+    span.style.opacity    = randFrom(opacities);
 
-    // Chơi lại
-    function resetGame() {
-        selectedCards = [];
-        document.getElementById('btnNext').disabled = true;
-        renderCards();
-        showScreen('screen-select');
-    }
+    // === TÍNH NĂNG TƯƠNG TÁC (CLICK) ===
+    span.onclick = function() {
+      // Nếu chữ đã bấm rồi thì không xử lý nữa
+      if (this.classList.contains('correct') || this.classList.contains('wrong')) return;
 
-    // Khởi tạo
-    renderCards();
+      // Kiểm tra xem từ vừa bấm thuộc danh sách nào
+      if (TARGET_WORDS.includes(this.textContent)) {
+        this.classList.add('correct'); // Bấm đúng -> Xanh lá
+      } else {
+        this.classList.add('wrong');   // Bấm sai -> Đỏ
+      }
+    };
 
+    lane.appendChild(span);
+  });
+
+  stage.appendChild(lane);
+
+  // === ĐIỀU CHỈNH TỐC ĐỘ Ở ĐÂY ===
+  // Tốc độ cơ bản là 150, cộng thêm random từ 0 đến 100 (Tức là tốc độ từ 150 đến 250)
+  // Nếu muốn nhanh hơn nữa, tăng số 150 lên 200, 250...
+  const speed = 150 + Math.random() * 100; 
+  
+  const dir   = (i % 2 === 0) ? 1 : -1;  // Chạy so le trái phải
+
+  laneData.push({ el: lane, speed, dir, offset: 0 });
+}
+
+// Xử lý vòng lặp chạy chữ
+requestAnimationFrame(() => {
+  laneData.forEach(lane => {
+    const w = lane.el.scrollWidth;
+    lane.totalWidth = w;
+    lane.offset = lane.dir === 1 ? -w / 2 : 0;
+    lane.el.style.transform = `translateX(${lane.offset}px)`;
+  });
+});
+
+let last = null;
+function animate(ts) {
+  if (!last) last = ts;
+  const dt = (ts - last) / 1000;
+  last = ts;
+
+  laneData.forEach(lane => {
+    if (!lane.totalWidth) return;
+    const half = lane.totalWidth / 2;
+
+    lane.offset -= lane.dir * lane.speed * dt;
+
+    if (lane.dir === 1 && lane.offset < -half) lane.offset += half;
+    if (lane.dir === -1 && lane.offset > 0)    lane.offset -= half;
+
+    lane.el.style.transform = `translateX(${lane.offset}px)`;
+  });
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
 </script>
-
 </body>
 </html>
