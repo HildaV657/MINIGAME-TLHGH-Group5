@@ -111,19 +111,19 @@ body {
 
 <script>
 const TARGET_WORDS = [
-  "Hoạt động chủ đạo", "Tuổi đầu thanh niên", "Hướng nghiệp", "15–18 tuổi",
-  "Xu hướng nghề nghiệp", "Chọn nghề", "Hứng thú nghề", "Khẳng định bản thân",
-  "Kỳ vọng cha mẹ", "Hoạt động nhận thức", "Tri giác có chủ định", "Ghi nhớ logic", 
-  "Tư duy trừu tượng", "Tư duy lý luận", "Óc phê phán", "Hoài nghi khoa học",
-  "Tính độc lập", "Tính sáng tạo", "Cá nhân hóa", "Sở thích cá nhân"
+  "Hoạt động chủ đạo", "Tuổi đầu thanh niên", "Hướng nghiệp", "15–18 tuổi", "Ước mơ", "Trí tuệ cảm xúc", "Khả năng giao tiếp", "Tư vấn hướng nghiệp",
+  "Xu hướng nghề nghiệp", "Chọn nghề", "Hứng thú nghề", "Khẳng định bản thân", "Kinh tế", "Nhu cầu xã hội", "Mức lương", "Thời gian đào tạo",
+  "Kỳ vọng cha mẹ", "Hoạt động nhận thức", "Tri giác có chủ định", "Ghi nhớ logic", "Tính cách", "Ngoại Hình", "Sức khỏe", "Học phí",
+  "Tư duy trừu tượng", "Tư duy lý luận", "Óc phê phán", "Năng lực", "Sở trường", "Sở thích", "Hoài nghi khoa học", "Năng lực học tập",
+  "Tính độc lập", "Tính sáng tạo", "Cá nhân hóa", "Sở thích cá nhân", "Bạn bè", "Thầy cô", "Xu hướng", "Định kiến xã hội", "Văn hóa", "Môi trường sống"
 ];
 
 const NOISE_WORDS = [
-  "Trà sữa trân châu", "Định lý Pi-ta-go", "Chơi Game Online", "Idol Tiktok", 
-  "Bún đậu mắm tôm", "Hố đen vũ trụ", "Đu Trend mạng", "Bấm điện thoại", 
-  "Cúp C1 Châu Âu", "Ngủ nướng", "Lực ma sát", "Cách mạng 4.0", 
-  "Shopping săn sale", "Trí tuệ nhân tạo AI", "Tập Gym", "Phim truyền hình", 
-  "Lướt Facebook", "Tóp Tóp", "Gà rán KFC", "Oxi hóa khử", "Đạo hàm tích phân"
+  "Trà sữa trân châu", "Định lý Pi-ta-go", "Chơi Game Online", "Idol Tiktok", "Giáo viên",
+  "Bún đậu mắm tôm", "Hố đen vũ trụ", "Đu Trend mạng", "Bấm điện thoại", "Bún đậu mắm tôm", 
+  "Cúp C1 Châu Âu", "Ngủ nướng", "Lực ma sát", "Cách mạng 4.0", "Labubu", "Diễn viên",
+  "Shopping săn sale", "Trí tuệ nhân tạo AI", "Tập Gym", "Phim truyền hình", "Toán cao cấp",
+  "Lướt Facebook", "Tóp Tóp", "Gà rán KFC", "Oxi hóa khử", "Đạo hàm tích phân", "Cầu lông"
 ];
 
 const ALL_KEYWORDS = TARGET_WORDS.concat(NOISE_WORDS);
