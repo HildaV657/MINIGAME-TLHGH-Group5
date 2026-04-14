@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -26,6 +26,10 @@ html,body{width:100%;height:100vh;overflow:hidden;background:#0d0d1a;font-family
 .score-val{font-size:16px;font-weight:700;color:#fff;line-height:1.4}
 #score-val{color:#4eff9f}
 #miss-val{color:#ff5b5b}
+#timer-val{color:#f0c040;font-size:20px}
+#timer-box{border-color:rgba(240,192,64,0.3)}
+#timer-val.urgent{color:#ff5b5b;animation:pulse 0.5s ease-in-out infinite alternate}
+@keyframes pulse{from{opacity:1}to{opacity:0.4}}
 
 #stage{position:absolute;inset:0;overflow:hidden}
 
@@ -77,6 +81,92 @@ html,body{width:100%;height:100vh;overflow:hidden;background:#0d0d1a;font-family
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.good{background:rgba(61,255,160,0.18);border:1px solid #3dffa070;color:#3dffa0}
 #toast.bad{background:rgba(255,68,68,0.18);border:1px solid #ff444470;color:#ff6666}
+
+
+#result-overlay{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(13,13,26,0.92);
+  display:none;
+  align-items:center;justify-content:center;
+  backdrop-filter:blur(6px);
+}
+#result-overlay.show{display:flex}
+#result-card{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:20px;
+  padding:36px 40px;
+  text-align:center;
+  max-width:340px;
+  width:90%;
+  animation:cardIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes cardIn{
+  from{transform:scale(0.7);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+#result-card h2{
+  color:#f0c040;font-size:22px;font-weight:700;
+  margin-bottom:6px;
+  text-shadow:0 0 16px rgba(240,192,64,0.5);
+}
+#result-card .subtitle{
+  color:rgba(255,255,255,0.45);font-size:13px;margin-bottom:28px;
+}
+.result-stats{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;
+}
+.stat-box{
+  background:rgba(255,255,255,0.06);
+  border-radius:12px;padding:14px 10px;
+}
+.stat-label{font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:4px}
+.stat-num{font-size:36px;font-weight:800;line-height:1}
+.stat-num.green{color:#4eff9f}
+.stat-num.red{color:#ff5b5b}
+.stat-num.yellow{color:#f0c040}
+.stat-note{font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px}
+.result-bar{
+  height:8px;border-radius:99px;background:rgba(255,255,255,0.08);
+  overflow:hidden;margin-bottom:24px;
+}
+.result-bar-fill{
+  height:100%;border-radius:99px;background:linear-gradient(90deg,#4eff9f,#f0c040);
+  transition:width 1s cubic-bezier(0.34,1.1,0.64,1);
+}
+.result-comment{
+  color:rgba(255,255,255,0.7);font-size:14px;
+  line-height:1.6;margin-bottom:24px;
+  background:rgba(255,255,255,0.05);
+  border-radius:10px;padding:12px 14px;
+}
+#play-again{
+  background:linear-gradient(135deg,#f0c040,#ffa040);
+  color:#0d0d1a;border:none;border-radius:12px;
+  padding:12px 32px;font-size:15px;font-weight:700;
+  cursor:pointer;width:100%;
+  transition:transform 0.15s,box-shadow 0.15s;
+  box-shadow:0 4px 16px rgba(240,192,64,0.3);
+}
+#play-again:active{transform:scale(0.97)}
+#play-again:hover{box-shadow:0 6px 20px rgba(240,192,64,0.45)}
+
+
+#countdown-overlay{
+  position:fixed;inset:0;z-index:900;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(13,13,26,0.8);
+  backdrop-filter:blur(4px);
+}
+#countdown-num{
+  font-size:100px;font-weight:800;color:#f0c040;
+  text-shadow:0 0 40px rgba(240,192,64,0.6);
+  animation:popIn 0.5s ease both;
+}
+@keyframes popIn{
+  from{transform:scale(1.8);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
 </style>
 </head>
 <body>
@@ -84,6 +174,10 @@ html,body{width:100%;height:100vh;overflow:hidden;background:#0d0d1a;font-family
 <div id="header">
   <div id="title">NHANH MẮT TÌM TỪ KHÓA BÀI HỌC</div>
   <div id="score-panel">
+    <div class="score-box" id="timer-box">
+      <span class="score-label">THỜI GIAN</span>
+      <span class="score-val" id="timer-val">1:00</span>
+    </div>
     <div class="score-box">
       <span class="score-label">ĐÚNG</span>
       <span class="score-val" id="score-val">0</span>
@@ -99,12 +193,48 @@ html,body{width:100%;height:100vh;overflow:hidden;background:#0d0d1a;font-family
 <div id="stage"></div>
 <div id="toast"></div>
 
+
+<div id="countdown-overlay">
+  <div id="countdown-num">3</div>
+</div>
+
+
+<div id="result-overlay">
+  <div id="result-card">
+    <h2>⏱ Hết giờ!</h2>
+    <div class="subtitle">Kết quả sau 1 phút</div>
+    <div class="result-stats">
+      <div class="stat-box">
+        <div class="stat-label">TỪ KHÓA ĐÚNG</div>
+        <div class="stat-num green" id="res-correct">0</div>
+        <div class="stat-note">/ <span id="res-total"></span> từ khóa</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">NHẦM TỪ</div>
+        <div class="stat-num red" id="res-miss">0</div>
+        <div class="stat-note">lần</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">ĐỘ CHÍNH XÁC</div>
+        <div class="stat-num yellow" id="res-acc">0%</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">XẾP LOẠI</div>
+        <div class="stat-num" id="res-rank" style="font-size:28px">—</div>
+      </div>
+    </div>
+    <div class="result-bar"><div class="result-bar-fill" id="res-bar" style="width:0%"></div></div>
+    <div class="result-comment" id="res-comment"></div>
+    <button id="play-again" onclick="location.reload()">🔄 Chơi lại</button>
+  </div>
+</div>
+
 <script>
 const TARGET_WORDS = [
   "Hoạt động chủ đạo","Tuổi đầu thanh niên","Hướng nghiệp","15–18 tuổi","Ước mơ",
   "Trí tuệ cảm xúc","Khả năng giao tiếp","Tư vấn hướng nghiệp","Xu hướng nghề nghiệp",
   "Chọn nghề","Hứng thú nghề","Khẳng định bản thân","Kinh tế","Nhu cầu xã hội",
-  "Mức lương","Thời gian đào tạo","Kỳ vọng cha mẹ","Hoạt động nhận thức", 
+  "Mức lương","Thời gian đào tạo","Kỳ vọng cha mẹ","Hoạt động nhận thức",
   "Tri giác có chủ định","Ghi nhớ logic","Tính cách","Ngoại Hình","Sức khỏe","Học phí",
   "Tư duy trừu tượng","Tư duy lý luận","Óc phê phán","Năng lực","Sở trường","Sở thích",
   "Hoài nghi khoa học","Năng lực học tập","Tính độc lập","Tính sáng tạo","Cá nhân hóa",
@@ -112,10 +242,10 @@ const TARGET_WORDS = [
 ];
 
 const NOISE_WORDS = [
-  "Trà sữa trân châu","Định lý Pi-ta-go","Chơi Game","Ai đồ Tiktok","Giáo viên", "Up Locket",
-  "Bún đậu mắm tôm","Hố đen vũ trụ","Đu Trend mạng","Bấm điện thoại","Cúp C1 Châu Âu", "Meow",
-  "Ngủ nướng","Lực ma sát","Cách mạng 4.0","Labubu","Diễn viên","Săn sale", "Trà sữa", "Bánh bao",
-  "Trí tuệ nhân tạo","Tập Gym","Phim truyền hình","Toán cao cấp","Lướt Facebook", "Bây bi tri",
+  "Trà sữa trân châu","Định lý Pi-ta-go","Chơi Game","Ai đồ Tiktok","Giáo viên","Up Locket",
+  "Bún đậu mắm tôm","Hố đen vũ trụ","Đu Trend mạng","Bấm điện thoại","Cúp C1 Châu Âu","Meow",
+  "Ngủ nướng","Lực ma sát","Cách mạng 4.0","Labubu","Diễn viên","Săn sale","Trà sữa","Bánh bao",
+  "Trí tuệ nhân tạo","Tập Gym","Phim truyền hình","Toán cao cấp","Lướt Facebook","Bây bi tri",
   "Tóp Tóp","Gà rán KFC","Oxi hóa khử","Đạo hàm tích phân","Cầu lông","Gấu Bông","Xác suất thống kê"
 ];
 
@@ -123,10 +253,15 @@ const ALL = [...TARGET_WORDS, ...NOISE_WORDS];
 const targetSet = new Set(TARGET_WORDS);
 
 let score = 0, miss = 0;
-const scoreEl = document.getElementById('score-val');
-const missEl  = document.getElementById('miss-val');
-const toast   = document.getElementById('toast');
-let toastTimer = null;
+let gameActive = false;
+let timeLeft = 60;
+let timerInterval = null;
+
+const scoreEl   = document.getElementById('score-val');
+const missEl    = document.getElementById('miss-val');
+const timerEl   = document.getElementById('timer-val');
+const toast     = document.getElementById('toast');
+let toastTimer  = null;
 
 
 let actx = null;
@@ -163,7 +298,19 @@ function playMiss() {
     o.connect(g); o.start(); o.stop(c.currentTime + 0.3);
   } catch(e) {}
 }
-
+function playTick() {
+  try {
+    const c = getCtx();
+    const g = c.createGain();
+    g.connect(c.destination);
+    g.gain.setValueAtTime(0.15, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.08);
+    const o = c.createOscillator();
+    o.type = 'square';
+    o.frequency.setValueAtTime(880, c.currentTime);
+    o.connect(g); o.start(); o.stop(c.currentTime + 0.08);
+  } catch(e) {}
+}
 
 function showToast(msg, type) {
   clearTimeout(toastTimer);
@@ -171,7 +318,6 @@ function showToast(msg, type) {
   toast.className = 'show ' + type;
   toastTimer = setTimeout(() => { toast.className = ''; }, 900);
 }
-
 
 function shuffle(arr) {
   const a = [...arr];
@@ -189,11 +335,9 @@ const LANE_COUNT = isMobile ? 7 : 10;
 const stage      = document.getElementById('stage');
 const stagH      = window.innerHeight;
 const laneH      = stagH / LANE_COUNT;
-
 const sizes    = isMobile ? [13,15,17,19,22]     : [15,18,21,25,30,36];
 const weights  = [300,400,500,600,700];
 const opacities= [0.35,0.55,0.75,0.9,1.0];
-
 const laneData = [];
 
 for (let i = 0; i < LANE_COUNT; i++) {
@@ -213,6 +357,7 @@ for (let i = 0; i < LANE_COUNT; i++) {
 
     span.addEventListener('pointerdown', function(e) {
       e.preventDefault();
+      if (!gameActive) return;
       if (this.classList.contains('hit') || this.classList.contains('miss')) return;
       if (targetSet.has(this.textContent)) {
         this.classList.add('hit');
@@ -239,7 +384,6 @@ for (let i = 0; i < LANE_COUNT; i++) {
   laneData.push({ el: lane, speed, dir, offset: 0, totalWidth: 0 });
 }
 
-
 requestAnimationFrame(() => {
   laneData.forEach(lane => {
     const w = lane.el.scrollWidth;
@@ -255,7 +399,6 @@ function animate(ts) {
   if (!last) last = ts;
   const dt = Math.min((ts - last) / 1000, 0.05);
   last = ts;
-
   laneData.forEach(lane => {
     if (!lane.totalWidth) return;
     const half = lane.totalWidth / 2;
@@ -264,10 +407,83 @@ function animate(ts) {
     if (lane.dir === -1 && lane.offset >  0)    lane.offset -= half;
     lane.el.style.transform = `translateX(${lane.offset}px)`;
   });
-
   requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
+
+
+function updateTimer() {
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  timerEl.textContent = m + ':' + String(s).padStart(2, '0');
+  if (timeLeft <= 10) {
+    timerEl.classList.add('urgent');
+    playTick();
+  }
+  if (timeLeft <= 0) {
+    clearInterval(timerInterval);
+    gameActive = false;
+    showResult();
+  }
+  timeLeft--;
+}
+
+function showResult() {
+  const total   = TARGET_WORDS.length;
+  const attempts = score + miss;
+  const acc = attempts > 0 ? Math.round(score / attempts * 100) : 0;
+
+  document.getElementById('res-correct').textContent = score;
+  document.getElementById('res-miss').textContent    = miss;
+  document.getElementById('res-total').textContent   = total;
+  document.getElementById('res-acc').textContent     = acc + '%';
+
+  const pct = Math.round(score / total * 100);
+  setTimeout(() => {
+    document.getElementById('res-bar').style.width = pct + '%';
+  }, 200);
+
+  let rank, comment;
+  if (pct >= 80)      { rank = '🏆 S'; comment = 'Xuất sắc! Bạn gần như thuộc hết từ khóa rồi đó! Não siêu nét! '; }
+  else if (pct >= 60) { rank = '🥇 A'; comment = 'Rất tốt! Mắt tinh, phản xạ nhạy bén. Cố thêm chút nữa nhé!'; }
+  else if (pct >= 40) { rank = '🥈 B'; comment = 'Khá ổn! Bạn đã nhận ra được nhiều từ khóa. Luyện thêm là lên ngay!'; }
+  else if (pct >= 20) { rank = '🥉 C'; comment = 'Cần ôn lại từ khóa bài học hơn nhé. Chơi thêm để quen hơn!'; }
+  else                { rank = '📖 D'; comment = 'Ôi, hãy đọc lại bài và chơi lại nhé! Lần sau sẽ tốt hơn thôi!'; }
+
+  document.getElementById('res-rank').textContent    = rank;
+  document.getElementById('res-comment').textContent = comment;
+
+  document.getElementById('result-overlay').classList.add('show');
+}
+
+
+function startCountdown() {
+  const overlay = document.getElementById('countdown-overlay');
+  const numEl   = document.getElementById('countdown-num');
+  let count = 3;
+  const tick = () => {
+    numEl.style.animation = 'none';
+    void numEl.offsetWidth;
+    numEl.style.animation = 'popIn 0.5s ease both';
+    if (count > 0) {
+      numEl.textContent = count;
+      count--;
+      setTimeout(tick, 900);
+    } else {
+      numEl.textContent = 'BẮT ĐẦU!';
+      numEl.style.color = '#4eff9f';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        gameActive = true;
+        timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+      }, 700);
+    }
+  };
+  tick();
+}
+
+startCountdown();
 </script>
 </body>
 </html>
