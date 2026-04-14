@@ -243,7 +243,7 @@ const TARGET_WORDS = [
 
 const NOISE_WORDS = [
   "Trà sữa trân châu","Định lý Pi-ta-go","Chơi Game","Ai đồ Tiktok","Giáo viên","Up Locket",
-  "Bún đậu mắm tôm","Hố đen vũ trụ","Đu Trend mạng","Bấm điện thoại","Cúp C1 Châu Âu","Meow",
+  "Bún đậu mắm tôm","Hố đen vũ trụ","Đu Trend mạng","Bấm điện thoại","T1 mãi đỉnh","Meow",
   "Ngủ nướng","Lực ma sát","Cách mạng 4.0","Labubu","Diễn viên","Săn sale","Trà sữa","Bánh bao",
   "Trí tuệ nhân tạo","Tập Gym","Phim truyền hình","Toán cao cấp","Lướt Facebook","Bây bi tri",
   "Tóp Tóp","Gà rán KFC","Oxi hóa khử","Đạo hàm tích phân","Cầu lông","Gấu Bông","Xác suất thống kê"
@@ -444,9 +444,9 @@ function showResult() {
   }, 200);
 
   let rank, comment;
-  if (pct >= 80)      { rank = '🏆 S'; comment = 'Xuất sắc! Bạn gần như thuộc hết từ khóa rồi đó! Não siêu nét! '; }
-  else if (pct >= 60) { rank = '🥇 A'; comment = 'Rất tốt! Mắt tinh, phản xạ nhạy bén. Cố thêm chút nữa nhé!'; }
-  else if (pct >= 40) { rank = '🥈 B'; comment = 'Khá ổn! Bạn đã nhận ra được nhiều từ khóa. Luyện thêm là lên ngay!'; }
+  if (pct >= 95)      { rank = '🏆 S'; comment = 'Xuất sắc! Bạn gần như thuộc hết từ khóa rồi đó! Não siêu nét! '; }
+  else if (pct >= 90) { rank = '🥇 A'; comment = 'Rất tốt! Mắt tinh, phản xạ nhạy bén. Cố thêm chút nữa nhé!'; }
+  else if (pct >= 50) { rank = '🥈 B'; comment = 'Khá ổn! Bạn đã nhận ra được nhiều từ khóa. Luyện thêm là lên ngay!'; }
   else if (pct >= 20) { rank = '🥉 C'; comment = 'Cần ôn lại từ khóa bài học hơn nhé. Chơi thêm để quen hơn!'; }
   else                { rank = '📖 D'; comment = 'Ôi, hãy đọc lại bài và chơi lại nhé! Lần sau sẽ tốt hơn thôi!'; }
 
